@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app:delegated
+    environment:
+      FLASK_ENV: development
+
+  frontend:
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro

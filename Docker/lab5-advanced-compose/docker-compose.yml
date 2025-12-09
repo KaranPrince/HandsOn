@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-placeholder}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ${DB_PASSWORD_FILE}:/run/secrets/db_password:ro
+    entrypoint:
+      - sh
+      - -c
+      - |
+        if [ -f /run/secrets/db_password ]; then
+          export POSTGRES_PASSWORD="$(cat /run/secrets/db_password)"
+        fi
+        exec docker-entrypoint.sh postgres
+    networks:
+      - appnet
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: ${BACKEND_IMAGE}
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS_FILE: /run/secrets/db_password
+    ports:
+      - "${HOST_BACKEND_PORT}:5000"
+    volumes:
+      - ./secrets/db_password.txt:/run/secrets/db_password:ro
+    networks:
+      - appnet
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5000/api/hello"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: on-failure
+
+  frontend:
+    build: ./frontend
+    image: ${FRONTEND_IMAGE}
+    depends_on:
+      - backend
+    ports:
+      - "${HOST_FRONTEND_PORT}:80"
+    networks:
+      - appnet
+    restart: unless-stopped
+
+networks:
+  appnet:
+
+volumes:
+  dbdata:
