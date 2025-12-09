@@ -1,22 +1,18 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16
-    container_name: lab4_db
     environment:
       POSTGRES_DB: testdb
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
     volumes:
       - dbdata:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - appnet
 
   backend:
     build: ./backend
-    container_name: lab4_backend
     depends_on:
       - db
     environment:
@@ -28,18 +24,15 @@ services:
       - "5001:5000"
     networks:
       - appnet
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/hello"]
-      interval: 5s
-      retries: 5
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
-    container_name: lab4_frontend
     ports:
       - "8082:80"
     networks:
       - appnet
+    restart: unless-stopped
 
 networks:
   appnet:
