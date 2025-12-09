@@ -1,10 +1,11 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 import os
 import psycopg2
 import socket
 
 app = Flask(__name__)
-
+CORS(app)
 DB_HOST = os.getenv("DB_HOST", "db")
 DB_NAME = os.getenv("DB_NAME", "testdb")
 DB_USER = os.getenv("DB_USER", "testuser")
