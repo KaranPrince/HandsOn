@@ -1,0 +1,12 @@
+{
+  "name": "docker-lab-app",
+  "version": "1.0.0",
+  "description": "A test Node.js app for Docker multi-stage build lab.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
