@@ -1,27 +1,30 @@
-# Lab 5 – Advanced Docker Compose
+Lab 5 – Advanced Docker Compose (with Volumes lab)
 
-Features:
-- Scaling backend
-- Load-balancing via Docker DNS
-- Secrets via file mounts
-- Healthchecks
-- Dev overrides (live code editing)
-- Postgres + Flask + Nginx full stack
+Start:
+  docker compose up --build -d
 
-## Commands
+Status:
+  docker compose ps
+  docker compose logs -f backend
 
-Build + start:
-docker compose up --build -d
+Test:
+  http://127.0.0.1:8082  # open in browser
 
 Scale backend:
-docker compose up -d --scale backend=4
+  docker compose up -d --scale backend=4 --no-recreate
 
-Test DNS load balancing:
-docker exec -it $(docker compose ps -q frontend)
-sh -c "apk add curl >/dev/null; for i in 1 2 3 4; do curl -s http://backend:5000/api/hello; echo; done"
+DNS test (from frontend container):
+  docker exec -it $(docker compose ps -q frontend) /bin/sh -c "apk add --no-cache curl >/dev/null 2>&1 || true; for i in 1 2 3 4; do curl -sS http://backend:5000/api/hello; echo; done"
 
-Simulate backend crash:
-docker exec -it <backend-container> pkill -9 python
+Backup volume:
+  docker run --rm -v lab5-advanced-compose_dbdata:/volume -v ${PWD}:/backup alpine sh -c "cd /volume && tar -czf /backup/dbdata-backup.tar ."
+
+Restore volume:
+  docker compose down
+  docker volume rm lab5-advanced-compose_dbdata
+  docker volume create --name lab5-advanced-compose_dbdata
+  docker run --rm -v lab5-advanced-compose_dbdata:/volume -v ${PWD}:/backup alpine sh -c "cd /volume && tar -xzf /backup/dbdata-backup.tar"
+  docker compose up -d
 
 Cleanup:
-docker compose down --rmi local --volumes
+  docker compose down --rmi local --volumes

@@ -20,7 +20,7 @@ services:
         fi
         exec docker-entrypoint.sh postgres
     networks:
-      - appnet
+      - lab5-advanced-compose_appnet
     restart: unless-stopped
 
   backend:
@@ -33,17 +33,12 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS_FILE: /run/secrets/db_password
-    ports:
-      - "${HOST_BACKEND_PORT}:5000"
     volumes:
       - ./secrets/db_password.txt:/run/secrets/db_password:ro
+    ports:
+      - "${HOST_BACKEND_PORT}:5000"
     networks:
-      - appnet
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5000/api/hello"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
+      - lab5-advanced-compose_appnet
     restart: on-failure
 
   frontend:
@@ -54,11 +49,11 @@ services:
     ports:
       - "${HOST_FRONTEND_PORT}:80"
     networks:
-      - appnet
+      - lab5-advanced-compose_appnet
     restart: unless-stopped
 
 networks:
-  appnet:
+  lab5-advanced-compose_appnet:
 
 volumes:
   dbdata:

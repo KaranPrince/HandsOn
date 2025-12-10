@@ -5,16 +5,17 @@
 </head>
 <body>
   <h1>Frontend</h1>
-  <div id="out">Loading...</div>
+  <pre id="out">Loading...</pre>
 
   <script>
     async function callApi() {
       try {
-        const res = await fetch('http://localhost:5001/api/hello');
+        // Use same-origin path; nginx will proxy /api/hello to backend inside Docker network
+        const res = await fetch('/api/hello');
         const json = await res.json();
         document.getElementById('out').innerText = JSON.stringify(json, null, 2);
       } catch (e) {
-        document.getElementById('out').innerText = e;
+        document.getElementById('out').innerText = 'Error: ' + e;
       }
     }
 
